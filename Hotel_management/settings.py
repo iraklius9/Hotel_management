@@ -119,5 +119,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'hotels.CustomUser'
-LOGIN_REDIRECT_URL = 'hotel_list'
+# LOGIN_REDIRECT_URL = 'hotel_detail'
 LOGOUT_REDIRECT_URL = 'hotel_list'

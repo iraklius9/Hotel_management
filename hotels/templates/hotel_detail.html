@@ -6,31 +6,56 @@
 <body>
 <h1>{{ hotel.name }}</h1>
 <p>{{ hotel.description }}</p>
+
+<nav>
+    {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}">Log out</a>
+    {% else %}
+        <a href="{% url 'login' %}">Log in</a> |
+        <a href="{% url 'register' %}">Register</a>
+    {% endif %}
+</nav>
+
 <h2>Services</h2>
 <ul>
     {% for service in hotel.services.all %}
         <li>
-            {{ service.name }} - {{ service.description }} - ${{ service.price }}
-            {% if service.available %}
-                <a href="{% url 'reserve_service' service.id %}">Reserve</a>
-            {% else %}
-                Not available
+            {{ service.name }} - {{ service.description }}
+            {% if user.is_authenticated %}
+                {% if is_registered %}
+                    - ${{ service.price }}
+                    {% if service.available %}
+                        <a href="{% url 'reserve_service' service.id %}">Reserve</a>
+                    {% else %}
+                        Not available
+                    {% endif %}
+                {% else %}
+                    <p>You must be registered at this hotel to see prices and make reservations.</p>
+                {% endif %}
             {% endif %}
         </li>
     {% endfor %}
 </ul>
+
 <h2>Room Services</h2>
 <ul>
     {% for room_service in hotel.room_services.all %}
         <li>
-            {{ room_service.name }} - {{ room_service.description }} - ${{ room_service.price }}
-            {% if room_service.available %}
-                <a href="{% url 'room_service_request' room_service.id %}">Request</a>
-            {% else %}
-                Not available
+            {{ room_service.name }}
+            {% if user.is_authenticated %}
+                {% if is_registered %}
+                    <a href="{% url 'room_service_request' room_service.id %}">Request</a>
+                {% else %}
+                    <p>You must be registered at this hotel to request room services.</p>
+                {% endif %}
             {% endif %}
         </li>
     {% endfor %}
 </ul>
+
+{% if not user.is_authenticated %}
+    <p>Please <a href="{% url 'login' %}">log in</a> to use hotel services and make requests.</p>
+{% endif %}
+
 </body>
 </html>
