@@ -26,6 +26,15 @@ class CustomUser(AbstractUser):
         return self.private_number
 
 
+class HotelRegisteredUser(models.Model):
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
+    private_number = models.CharField(max_length=20, unique=True)
+    email = models.EmailField(unique=True)
+
+    def __str__(self):
+        return self.private_number
+
+
 class Service(models.Model):
     hotel = models.ForeignKey(Hotel, related_name='services', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)

@@ -3,30 +3,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib import messages
-from .models import CustomUser, Hotel, Service, Reservation, RoomService, RoomServiceRequest
+from .models import CustomUser, Hotel, Service, Reservation, RoomService, RoomServiceRequest, HotelRegisteredUser
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ReservationForm, RoomServiceRequestForm
-
-
-def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            private_number = form.cleaned_data.get('private_number')
-            if CustomUser.objects.filter(private_number=private_number).exists():
-                user = form.save()
-                login(request, user)
-                return redirect('hotel_list')
-            else:
-                messages.error(request, 'Private number not found in the database.')
-        else:
-            messages.error(request, 'Please correct the error below.')
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'register.html', {'form': form})
-
-
-class CustomLoginView(LoginView):
-    authentication_form = CustomAuthenticationForm
 
 
 def hotel_list(request):
@@ -36,7 +14,8 @@ def hotel_list(request):
 
 def hotel_detail(request, hotel_id):
     hotel = get_object_or_404(Hotel, id=hotel_id)
-    return render(request, 'hotel_detail.html', {'hotel': hotel})
+    is_authenticated = request.user.is_authenticated
+    return render(request, 'hotel_detail.html', {'hotel': hotel, 'is_authenticated': is_authenticated})
 
 
 @login_required
@@ -75,3 +54,26 @@ def room_service_request(request, room_service_id):
     else:
         form = RoomServiceRequestForm()
     return render(request, 'room_service_request.html', {'form': form, 'room_service': room_service})
+
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            private_number = form.cleaned_data.get('private_number')
+            email = form.cleaned_data.get('email')
+            if HotelRegisteredUser.objects.filter(private_number=private_number, email=email).exists():
+                user = form.save()
+                login(request, user)
+                return redirect('hotel_list')
+            else:
+                messages.error(request, 'Private number and email not found in the database.')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'register.html', {'form': form})
+
+
+class CustomLoginView(LoginView):
+    authentication_form = CustomAuthenticationForm
