@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reserve {{ service.name }}</title>
+</head>
+<body>
+    <h1>Reserve {{ service.name }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Reserve</button>
+    </form>
+</body>
+</html>

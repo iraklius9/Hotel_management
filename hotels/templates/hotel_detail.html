@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ hotel.name }}</title>
+</head>
+<body>
+<h1>{{ hotel.name }}</h1>
+<p>{{ hotel.description }}</p>
+<h2>Services</h2>
+<ul>
+    {% for service in hotel.services.all %}
+        <li>
+            {{ service.name }} - {{ service.description }} - ${{ service.price }}
+            {% if service.available %}
+                <a href="{% url 'reserve_service' service.id %}">Reserve</a>
+            {% else %}
+                Not available
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+<h2>Room Services</h2>
+<ul>
+    {% for room_service in hotel.room_services.all %}
+        <li>
+            {{ room_service.name }} - {{ room_service.description }} - ${{ room_service.price }}
+            {% if room_service.available %}
+                <a href="{% url 'room_service_request' room_service.id %}">Request</a>
+            {% else %}
+                Not available
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
