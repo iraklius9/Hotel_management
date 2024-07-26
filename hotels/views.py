@@ -7,6 +7,8 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from datetime import datetime, time, timedelta
 from django.utils import timezone
+from django.utils.timezone import make_aware
+
 from hotels.models import (Hotel, Service, RoomService,
                            HotelRegisteredUser, AvailableTime, Reservation)
 from hotels.forms import CustomUserCreationForm, CustomAuthenticationForm, ReservationForm, RoomServiceRequestForm
@@ -52,12 +54,15 @@ def reserve_service(request, service_id):
     delta = timedelta(hours=1)
     time_slots = []
 
-    current_time = start_time
+    # Convert time slots to aware datetimes
+    current_time = make_aware(start_time)
+    end_time = make_aware(end_time)
     while current_time <= end_time:
         time_slots.append(current_time)
         current_time += delta
 
-    # Filter out reserved times
+    # Filter out reserved times and times not greater than current time
+    now = timezone.now()
     reserved_times = Reservation.objects.filter(
         service=service,
         reserved_for__start_time__gte=start_time,
@@ -65,15 +70,19 @@ def reserve_service(request, service_id):
     ).values_list('reserved_for__start_time', flat=True)
     reserved_times_set = set(reserved_times)
 
-    available_times = sorted(set(slot for slot in time_slots if slot not in reserved_times_set))
+    available_times = sorted(set(slot for slot in time_slots
+                                 if slot not in reserved_times_set and slot > now))
 
     if request.method == 'POST':
         reservation_time_str = request.POST.get('reservation_time')
         reservation_time = datetime.strptime(reservation_time_str, "%Y-%m-%d %H:%M:%S")
+        reservation_time = make_aware(reservation_time)
 
         # Check if the time is available
         if reservation_time in reserved_times_set:
             messages.error(request, 'The selected time is already reserved. Please choose another time.')
+        elif reservation_time <= now:
+            messages.error(request, 'The selected time is in the past. Please choose a future time.')
         else:
             # Find or create AvailableTime object
             available_time, created = AvailableTime.objects.get_or_create(
@@ -89,9 +98,11 @@ def reserve_service(request, service_id):
                     reserved_for=available_time
                 )
                 messages.success(request, 'Service reserved successfully.')
-                return redirect('hotel_detail', hotel_id=service.hotel.id)
             else:
                 messages.error(request, 'The selected time is no longer available. Please choose another time.')
+
+        # Render the same page with messages
+        return render(request, 'reserve_service.html', {'service': service, 'available_times': available_times})
 
     return render(request, 'reserve_service.html', {'service': service, 'available_times': available_times})
 

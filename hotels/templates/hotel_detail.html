@@ -23,7 +23,7 @@
             {{ service.name }} - {{ service.description }} - ${{ service.price }}
             {% if user.is_authenticated %}
                 {% if is_registered %}
-                    - ${{ service.price }}
+
                     {% if service.available %}
                         <a href="{% url 'reserve_service' service.id %}">Reserve</a>
                     {% else %}
