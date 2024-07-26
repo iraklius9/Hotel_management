@@ -81,14 +81,14 @@ def reserve_service(request, service_id):
         no_times_message = "All available times for the selected date are reserved."
 
     if request.method == 'POST':
-        reservation_times_str = request.POST.getlist('reservation_times')
-        reservation_times = [make_aware(datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")) for time_str in
-                             reservation_times_str]
+        reservation_times_str = request.POST.get('reservation_times')
+        reservation_times = [make_aware(datetime.strptime(time_str.strip(), "%Y-%m-%d %H:%M:%S"))
+                             for time_str in reservation_times_str.split(',') if time_str.strip()]
 
         total_hours = len(reservation_times)
         service_price = Decimal(service.price)
         total_price = service_price * total_hours
-        discount_price = total_price * Decimal('0.8')
+        discount_price = total_price * Decimal('0.2')
 
         conflict_times = [time for time in reservation_times if time in reserved_times_set]
         if conflict_times:

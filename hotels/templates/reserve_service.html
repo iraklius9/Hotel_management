@@ -81,7 +81,7 @@
                     this.classList.add('btn-danger');
                 }
 
-                hiddenInput.value = currentTimes.join(',');
+                hiddenInput.value = currentTimes.join(',').replace(/(^,)|(,$)/g, '');  // Remove leading/trailing commas
             });
         });
     </script>

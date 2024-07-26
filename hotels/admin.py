@@ -1,12 +1,44 @@
+# admin.py
 from django.contrib import admin
-from hotels.models import Hotel, Service, Reservation, RoomService, RoomServiceRequest, CustomUser, HotelRegisteredUser, \
-    AvailableTime
+from .models import Hotel, CustomUser, HotelRegisteredUser, Service, AvailableTime, Reservation, RoomService, \
+    RoomServiceRequest
 
-admin.site.register(Hotel)
-admin.site.register(Service)
-admin.site.register(Reservation)
-admin.site.register(RoomService)
-admin.site.register(RoomServiceRequest)
-admin.site.register(CustomUser)
-admin.site.register(HotelRegisteredUser)
-admin.site.register(AvailableTime)
+
+@admin.register(Hotel)
+class HotelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'location')
+
+
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ('email', 'private_number', 'is_staff', 'is_user')
+
+
+@admin.register(HotelRegisteredUser)
+class HotelRegisteredUserAdmin(admin.ModelAdmin):
+    list_display = ('hotel', 'private_number', 'email')
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'hotel', 'price', 'available')
+
+
+@admin.register(AvailableTime)
+class TakenDateAdmin(admin.ModelAdmin):
+    list_display = ('service', 'start_time', 'end_time', 'is_reserved')
+
+
+@admin.register(Reservation)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'service', 'reservation_date', 'reserved_for')
+
+
+@admin.register(RoomService)
+class RoomServiceAdmin(admin.ModelAdmin):
+    list_display = ('hotel', 'name')
+
+
+@admin.register(RoomServiceRequest)
+class RoomServiceRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'room_service', 'request_date', 'status')

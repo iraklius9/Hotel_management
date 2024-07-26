@@ -56,6 +56,10 @@ class AvailableTime(models.Model):
     def __str__(self):
         return f"{self.service.name} from {self.start_time} to {self.end_time}"
 
+    class Meta:
+        verbose_name = "Taken Date"
+        verbose_name_plural = "Taken Dates"
+
 
 class Reservation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
