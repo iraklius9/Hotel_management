@@ -37,10 +37,6 @@ def hotel_detail(request, hotel_id):
     })
 
 
-from django.utils import timezone
-from datetime import datetime, time, timedelta
-
-
 @login_required
 def reserve_service(request, service_id):
     service = get_object_or_404(Service, id=service_id)
@@ -73,6 +69,10 @@ def reserve_service(request, service_id):
 
     available_times = sorted(slot for slot in time_slots
                              if slot not in reserved_times_set and slot > now)
+
+    no_times_message = None
+    if not available_times:
+        no_times_message = "All available times for today are reserved."
 
     if request.method == 'POST':
         reservation_times_str = request.POST.getlist('reservation_times')
@@ -123,7 +123,11 @@ def reserve_service(request, service_id):
             messages.success(request, f'Service reserved successfully. Total cost: ${discount_price:.2f}')
             return redirect('reserve_service', service_id=service.id)
 
-    return render(request, 'reserve_service.html', {'service': service, 'available_times': available_times})
+    return render(request, 'reserve_service.html', {
+        'service': service,
+        'available_times': available_times,
+        'no_times_message': no_times_message
+    })
 
 
 @login_required

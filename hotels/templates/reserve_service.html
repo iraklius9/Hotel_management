@@ -20,22 +20,29 @@
             </div>
         {% endif %}
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="btn-group-vertical" role="group" aria-label="Available times">
-                {% for time in available_times %}
-                    <button
-                        type="button"
-                        class="btn btn-primary mb-2"
-                        data-time="{{ time|date:"Y-m-d H:i:s" }}"
-                    >
-                        {{ time|date:"Y-m-d H:i" }}
-                    </button>
-                {% endfor %}
+        <!-- Display message if no available times -->
+        {% if no_times_message %}
+            <div class="alert alert-warning" role="alert">
+                {{ no_times_message }}
             </div>
-            <input type="hidden" name="reservation_times" id="hidden_reservation_times" value="">
-            <button type="submit" class="btn btn-success">Reserve</button>
-        </form>
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="btn-group-vertical" role="group" aria-label="Available times">
+                    {% for time in available_times %}
+                        <button
+                            type="button"
+                            class="btn btn-primary mb-2"
+                            data-time="{{ time|date:"Y-m-d H:i:s" }}"
+                        >
+                            {{ time|date:"Y-m-d H:i" }}
+                        </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="reservation_times" id="hidden_reservation_times" value="">
+                <button type="submit" class="btn btn-success">Reserve</button>
+            </form>
+        {% endif %}
     </div>
 
     <!-- Add Bootstrap JS and dependencies -->
