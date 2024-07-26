@@ -22,15 +22,20 @@
 
         <form method="post">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="reservation_time">Available Times:</label>
-                <select name="reservation_time" id="reservation_time" class="form-control">
-                    {% for time in available_times %}
-                        <option value="{{ time|date:"Y-m-d H:i:s" }}">{{ time|date:"Y-m-d H:i H:i" }}</option>
-                    {% endfor %}
-                </select>
+            <div class="btn-group-vertical" role="group" aria-label="Available times">
+                {% for time in available_times %}
+                    <button
+                        type="submit"
+                        name="reservation_time"
+                        value="{{ time|date:"Y-m-d H:i:s" }}"
+                        class="btn btn-primary mb-2"
+                    >
+                        {{ time|date:"Y-m-d H:i H:i" }}
+                    </button>
+                {% endfor %}
             </div>
-            <button type="submit" class="btn btn-primary">Reserve</button>
+            <!-- Ensure a hidden input is present for form submission -->
+            <input type="hidden" name="reservation_time" id="hidden_reservation_time" value="">
         </form>
     </div>
 
@@ -38,5 +43,13 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Update the hidden input when a button is clicked
+        document.querySelectorAll('.btn-group-vertical .btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('hidden_reservation_time').value = this.value;
+            });
+        });
+    </script>
 </body>
 </html>
