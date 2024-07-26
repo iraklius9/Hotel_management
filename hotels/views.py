@@ -65,30 +65,33 @@ def reserve_service(request, service_id):
     ).values_list('reserved_for__start_time', flat=True)
     reserved_times_set = set(reserved_times)
 
-    available_times = [slot for slot in time_slots if slot not in reserved_times_set]
+    available_times = sorted(set(slot for slot in time_slots if slot not in reserved_times_set))
 
     if request.method == 'POST':
         reservation_time_str = request.POST.get('reservation_time')
         reservation_time = datetime.strptime(reservation_time_str, "%Y-%m-%d %H:%M:%S")
 
-        # Find or create AvailableTime object
-        available_time = AvailableTime.objects.get_or_create(
-            service=service,
-            start_time=reservation_time,
-            end_time=reservation_time + timedelta(hours=1),
-            is_reserved=False
-        )[0]
-
-        available_time.is_reserved = True
-        available_time.save()
-
-        Reservation.objects.create(
-            user=request.user,
-            service=service,
-            reserved_for=available_time
-        )
-        messages.success(request, 'Service reserved successfully.')
-        return redirect('hotel_detail', hotel_id=service.hotel.id)
+        # Check if the time is available
+        if reservation_time in reserved_times_set:
+            messages.error(request, 'The selected time is already reserved. Please choose another time.')
+        else:
+            # Find or create AvailableTime object
+            available_time, created = AvailableTime.objects.get_or_create(
+                service=service,
+                start_time=reservation_time,
+                end_time=reservation_time + timedelta(hours=1),
+                defaults={'is_reserved': True}
+            )
+            if created:
+                Reservation.objects.create(
+                    user=request.user,
+                    service=service,
+                    reserved_for=available_time
+                )
+                messages.success(request, 'Service reserved successfully.')
+                return redirect('hotel_detail', hotel_id=service.hotel.id)
+            else:
+                messages.error(request, 'The selected time is no longer available. Please choose another time.')
 
     return render(request, 'reserve_service.html', {'service': service, 'available_times': available_times})
 

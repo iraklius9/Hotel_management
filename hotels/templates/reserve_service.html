@@ -1,19 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reserve {{ service.name }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Reserve {{ service.name }}</h1>
-    <form method="post">
-        {% csrf_token %}
-        <label for="reservation_time">Available Times:</label>
-        <select name="reservation_time" id="reservation_time">
-            {% for time in available_times %}
-                <option value="{{ time|date:"Y-m-d H:i:s" }}">{{ time|date:"H:i" }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Reserve</button>
-    </form>
+    <header class="bg-primary text-white py-3">
+        <div class="container">
+            <h1 class="mb-0">Reserve {{ service.name }}</h1>
+        </div>
+    </header>
+
+    <main class="container my-4">
+        <h2>Select an Available Time Slot</h2>
+
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="reservation_time">Available Times:</label>
+                <select name="reservation_time" id="reservation_time" class="form-control">
+                    {% if available_times %}
+                        {% for time in available_times %}
+                            <option value="{{ time|date:"Y-m-d H:i:s" }}">{{ time|date:"Y-m-d H:i" }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="" disabled>No available times</option>
+                    {% endif %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Reserve</button>
+        </form>
+    </main>
+
+    <footer class="bg-light text-center py-3">
+        <p class="mb-0">&copy; {{ current_year }} Hotel Management System. All rights reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
