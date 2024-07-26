@@ -6,12 +6,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse_lazy
 from datetime import datetime, time, timedelta
-from django.utils import timezone
-from django.utils.timezone import make_aware
+from django.utils.timezone import make_aware, now
 
 from hotels.models import (Hotel, Service, RoomService,
                            HotelRegisteredUser, AvailableTime, Reservation)
-from hotels.forms import CustomUserCreationForm, CustomAuthenticationForm, ReservationForm, RoomServiceRequestForm
+from hotels.forms import CustomUserCreationForm, CustomAuthenticationForm, RoomServiceRequestForm
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from decimal import Decimal
@@ -47,12 +46,20 @@ def reserve_service(request, service_id):
     ).exists():
         return redirect('hotel_detail', hotel_id=service.hotel.id)
 
-    # Default to today's date if no date is selected
-    selected_date_str = request.GET.get('date', timezone.now().date().strftime('%Y-%m-%d'))
+    selected_date_str = request.GET.get('date')
+    if not selected_date_str:
+        # If no date is selected, handle GET requests
+        return render(request, 'reserve_service.html', {
+            'service': service,
+            'available_times': [],
+            'no_times_message': None,
+            'selected_date': None
+        })
+
     try:
         selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
     except ValueError:
-        selected_date = timezone.now().date()
+        selected_date = now().date()
 
     start_time = datetime.combine(selected_date, time(10, 0))
     end_time = datetime.combine(selected_date, time(21, 0))
@@ -65,7 +72,6 @@ def reserve_service(request, service_id):
         time_slots.append(current_time)
         current_time += delta
 
-    now = timezone.now()
     reserved_times = Reservation.objects.filter(
         service=service,
         reserved_for__start_time__gte=start_time,
@@ -74,7 +80,7 @@ def reserve_service(request, service_id):
     reserved_times_set = set(reserved_times)
 
     available_times = sorted(slot for slot in time_slots
-                             if slot not in reserved_times_set and slot > now)
+                             if slot not in reserved_times_set and slot > now())
 
     no_times_message = None
     if not available_times:
@@ -82,52 +88,73 @@ def reserve_service(request, service_id):
 
     if request.method == 'POST':
         reservation_times_str = request.POST.get('reservation_times')
-        reservation_times = [make_aware(datetime.strptime(time_str.strip(), "%Y-%m-%d %H:%M:%S"))
-                             for time_str in reservation_times_str.split(',') if time_str.strip()]
+        if reservation_times_str:
+            reservation_times = [make_aware(datetime.strptime(time_str.strip(), "%Y-%m-%d %H:%M:%S"))
+                                 for time_str in reservation_times_str.split(',') if time_str.strip()]
 
-        total_hours = len(reservation_times)
-        service_price = Decimal(service.price)
-        total_price = service_price * total_hours
-        discount_price = total_price * Decimal('0.2')
+            total_hours = len(reservation_times)
+            service_price = Decimal(service.price)
+            total_price = service_price * total_hours
+            discount_price = total_price * Decimal('0.2')
 
-        conflict_times = [time for time in reservation_times if time in reserved_times_set]
-        if conflict_times:
-            messages.error(request,
-                           f'The following times are already reserved: {", ".join([time.strftime("%Y-%m-%d %H:%M") for time in conflict_times])}. Please choose different times.')
-        elif any(time <= now for time in reservation_times):
-            messages.error(request, 'Some of the selected times are in the past. Please choose future times.')
-        else:
-            for reservation_time in reservation_times:
-                available_time = AvailableTime.objects.filter(
-                    service=service,
-                    start_time=reservation_time,
-                    end_time=reservation_time + timedelta(hours=1)
-                ).first()
-
-                if available_time:
-                    available_time.is_reserved = True
-                    available_time.save()
-                else:
-                    available_time = AvailableTime.objects.create(
+            conflict_times = [time for time in reservation_times if time in reserved_times_set]
+            if conflict_times:
+                messages.error(request,
+                               f'The following times are already reserved: {", ".join([time.strftime("%Y-%m-%d %H:%M") for time in conflict_times])}. Please choose different times.')
+                return render(request, 'reserve_service.html', {
+                    'service': service,
+                    'available_times': available_times,
+                    'no_times_message': None,  # Clear this message
+                    'selected_date': selected_date
+                })
+            elif any(time <= now() for time in reservation_times):
+                messages.error(request, 'Some of the selected times are in the past. Please choose future times.')
+                return render(request, 'reserve_service.html', {
+                    'service': service,
+                    'available_times': available_times,
+                    'no_times_message': None,
+                    'selected_date': selected_date
+                })
+            else:
+                for reservation_time in reservation_times:
+                    available_time = AvailableTime.objects.filter(
                         service=service,
                         start_time=reservation_time,
-                        end_time=reservation_time + timedelta(hours=1),
-                        is_reserved=True
-                    )
+                        end_time=reservation_time + timedelta(hours=1)
+                    ).first()
 
-                if not Reservation.objects.filter(
-                        user=request.user,
-                        service=service,
-                        reserved_for=available_time
-                ).exists():
-                    Reservation.objects.create(
-                        user=request.user,
-                        service=service,
-                        reserved_for=available_time
-                    )
+                    if available_time:
+                        available_time.is_reserved = True
+                        available_time.save()
+                    else:
+                        available_time = AvailableTime.objects.create(
+                            service=service,
+                            start_time=reservation_time,
+                            end_time=reservation_time + timedelta(hours=1),
+                            is_reserved=True
+                        )
 
-            messages.success(request, f'Service reserved successfully. Total cost: ${discount_price:.2f}')
-            return redirect('reserve_service', service_id=service.id)
+                    if not Reservation.objects.filter(
+                            user=request.user,
+                            service=service,
+                            reserved_for=available_time
+                    ).exists():
+                        Reservation.objects.create(
+                            user=request.user,
+                            service=service,
+                            reserved_for=available_time
+                        )
+
+                messages.success(request, f'Service reserved successfully. Total cost: ${discount_price:.2f}')
+                return redirect('reserve_service', service_id=service.id)
+        else:
+            messages.error(request, 'You have not chosen any time slots.')
+            return render(request, 'reserve_service.html', {
+                'service': service,
+                'available_times': available_times,
+                # 'no_times_message': 'You have not chosen any time slots.',
+                'selected_date': selected_date
+            })
 
     return render(request, 'reserve_service.html', {
         'service': service,

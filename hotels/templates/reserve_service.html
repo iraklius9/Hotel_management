@@ -21,6 +21,7 @@
             </div>
         {% endif %}
 
+        <!-- Date selection form -->
         <form method="GET" action="{% url 'reserve_service' service.id %}">
             <div class="form-group">
                 <label for="reservation_date">Select Date</label>
@@ -29,12 +30,14 @@
             <button type="submit" class="btn btn-primary">Show Available Times</button>
         </form>
 
+        <!-- No available times message -->
         {% if no_times_message %}
             <div class="alert alert-warning mt-3" role="alert">
                 {{ no_times_message }}
             </div>
         {% endif %}
 
+        <!-- Reservation form -->
         <form method="post">
             {% csrf_token %}
             <div class="btn-group-vertical" role="group" aria-label="Available times">
