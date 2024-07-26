@@ -25,17 +25,16 @@
             <div class="btn-group-vertical" role="group" aria-label="Available times">
                 {% for time in available_times %}
                     <button
-                        type="submit"
-                        name="reservation_time"
-                        value="{{ time|date:"Y-m-d H:i:s" }}"
+                        type="button"
                         class="btn btn-primary mb-2"
+                        data-time="{{ time|date:"Y-m-d H:i:s" }}"
                     >
-                        {{ time|date:"Y-m-d H:i H:i" }}
+                        {{ time|date:"Y-m-d H:i" }}
                     </button>
                 {% endfor %}
             </div>
-            <!-- Ensure a hidden input is present for form submission -->
-            <input type="hidden" name="reservation_time" id="hidden_reservation_time" value="">
+            <input type="hidden" name="reservation_times" id="hidden_reservation_times" value="">
+            <button type="submit" class="btn btn-success">Reserve</button>
         </form>
     </div>
 
@@ -44,10 +43,23 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        // Update the hidden input when a button is clicked
         document.querySelectorAll('.btn-group-vertical .btn').forEach(button => {
             button.addEventListener('click', function() {
-                document.getElementById('hidden_reservation_time').value = this.value;
+                const hiddenInput = document.getElementById('hidden_reservation_times');
+                const selectedTime = this.getAttribute('data-time');
+                let currentTimes = hiddenInput.value ? hiddenInput.value.split(',') : [];
+
+                if (currentTimes.includes(selectedTime)) {
+                    currentTimes = currentTimes.filter(time => time !== selectedTime);
+                    this.classList.remove('btn-danger');
+                    this.classList.add('btn-primary');
+                } else {
+                    currentTimes.push(selectedTime);
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-danger');
+                }
+
+                hiddenInput.value = currentTimes.join(',');
             });
         });
     </script>
