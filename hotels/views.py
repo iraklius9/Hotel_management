@@ -47,9 +47,15 @@ def reserve_service(request, service_id):
     ).exists():
         return redirect('hotel_detail', hotel_id=service.hotel.id)
 
-    today = timezone.now().date()
-    start_time = datetime.combine(today, time(10, 0))
-    end_time = datetime.combine(today, time(21, 0))
+    # Default to today's date if no date is selected
+    selected_date_str = request.GET.get('date', timezone.now().date().strftime('%Y-%m-%d'))
+    try:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        selected_date = timezone.now().date()
+
+    start_time = datetime.combine(selected_date, time(10, 0))
+    end_time = datetime.combine(selected_date, time(21, 0))
     delta = timedelta(hours=1)
     time_slots = []
 
@@ -72,7 +78,7 @@ def reserve_service(request, service_id):
 
     no_times_message = None
     if not available_times:
-        no_times_message = "All available times for today are reserved."
+        no_times_message = "All available times for the selected date are reserved."
 
     if request.method == 'POST':
         reservation_times_str = request.POST.getlist('reservation_times')
@@ -126,7 +132,8 @@ def reserve_service(request, service_id):
     return render(request, 'reserve_service.html', {
         'service': service,
         'available_times': available_times,
-        'no_times_message': no_times_message
+        'no_times_message': no_times_message,
+        'selected_date': selected_date
     })
 
 
