@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import hotel_list, hotel_detail, reserve_service, room_service_request, register, \
-    custom_logout_view, CustomLoginView
+    custom_logout_view, CustomLoginView, UserReservationsView
 
 from django.contrib.auth.views import LogoutView
 
@@ -13,4 +13,5 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', custom_logout_view, name='logout'),
+    path('reservations/', UserReservationsView.as_view(), name='user_reservations'),
 ]

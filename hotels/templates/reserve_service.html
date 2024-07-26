@@ -7,7 +7,12 @@
     <h1>Reserve {{ service.name }}</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <label for="reservation_time">Available Times:</label>
+        <select name="reservation_time" id="reservation_time">
+            {% for time in available_times %}
+                <option value="{{ time|date:"Y-m-d H:i:s" }}">{{ time|date:"H:i" }}</option>
+            {% endfor %}
+        </select>
         <button type="submit">Reserve</button>
     </form>
 </body>

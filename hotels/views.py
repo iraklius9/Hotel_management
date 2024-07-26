@@ -1,12 +1,17 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+# views.py
+from django.contrib.auth import logout, login
 from django.contrib.auth.views import LoginView
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse_lazy
-
-from .models import CustomUser, Hotel, Service, Reservation, RoomService, RoomServiceRequest, HotelRegisteredUser
-from .forms import CustomUserCreationForm, CustomAuthenticationForm, ReservationForm, RoomServiceRequestForm
+from datetime import datetime, time, timedelta
+from django.utils import timezone
+from hotels.models import (Hotel, Service, RoomService,
+                           HotelRegisteredUser, AvailableTime, Reservation)
+from hotels.forms import CustomUserCreationForm, CustomAuthenticationForm, ReservationForm, RoomServiceRequestForm
+from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 def hotel_list(request):
@@ -40,17 +45,52 @@ def reserve_service(request, service_id):
     ).exists():
         return redirect('hotel_detail', hotel_id=service.hotel.id)
 
+    # Generate time slots from 10 AM to 10 PM
+    today = timezone.now().date()
+    start_time = datetime.combine(today, time(10, 0))
+    end_time = datetime.combine(today, time(22, 0))
+    delta = timedelta(hours=1)
+    time_slots = []
+
+    current_time = start_time
+    while current_time <= end_time:
+        time_slots.append(current_time)
+        current_time += delta
+
+    # Filter out reserved times
+    reserved_times = Reservation.objects.filter(
+        service=service,
+        reserved_for__start_time__gte=start_time,
+        reserved_for__start_time__lt=end_time
+    ).values_list('reserved_for__start_time', flat=True)
+    reserved_times_set = set(reserved_times)
+
+    available_times = [slot for slot in time_slots if slot not in reserved_times_set]
+
     if request.method == 'POST':
-        form = ReservationForm(request.POST)
-        if form.is_valid():
-            reservation = form.save(commit=False)
-            reservation.user = request.user
-            reservation.service = service
-            reservation.save()
-            return redirect('hotel_detail', hotel_id=service.hotel.id)
-    else:
-        form = ReservationForm()
-    return render(request, 'reserve_service.html', {'form': form, 'service': service})
+        reservation_time_str = request.POST.get('reservation_time')
+        reservation_time = datetime.strptime(reservation_time_str, "%Y-%m-%d %H:%M:%S")
+
+        # Find or create AvailableTime object
+        available_time = AvailableTime.objects.get_or_create(
+            service=service,
+            start_time=reservation_time,
+            end_time=reservation_time + timedelta(hours=1),
+            is_reserved=False
+        )[0]
+
+        available_time.is_reserved = True
+        available_time.save()
+
+        Reservation.objects.create(
+            user=request.user,
+            service=service,
+            reserved_for=available_time
+        )
+        messages.success(request, 'Service reserved successfully.')
+        return redirect('hotel_detail', hotel_id=service.hotel.id)
+
+    return render(request, 'reserve_service.html', {'service': service, 'available_times': available_times})
 
 
 @login_required
@@ -115,3 +155,15 @@ class CustomLoginView(LoginView):
 def custom_logout_view(request):
     logout(request)
     return redirect('hotel_list')
+
+
+# views.py
+
+
+class UserReservationsView(LoginRequiredMixin, ListView):
+    model = Reservation
+    template_name = 'user_reservations.html'
+    context_object_name = 'reservations'
+
+    def get_queryset(self):
+        return Reservation.objects.filter(user=self.request.user).order_by('-reservation_date')

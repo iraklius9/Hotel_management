@@ -20,7 +20,7 @@
 <ul>
     {% for service in hotel.services.all %}
         <li>
-            {{ service.name }} - {{ service.description }}
+            {{ service.name }} - {{ service.description }} - ${{ service.price }}
             {% if user.is_authenticated %}
                 {% if is_registered %}
                     - ${{ service.price }}
@@ -29,12 +29,10 @@
                     {% else %}
                         Not available
                     {% endif %}
-                {% else %}
-                    <p>You must be registered at this hotel to see prices and make reservations.</p>
                 {% endif %}
             {% endif %}
         </li>
-    {% endfor %}
+    {% endfor %} <p>You must be registered at this hotel to make reservations.</p>
 </ul>
 
 <h2>Room Services</h2>
@@ -45,12 +43,10 @@
             {% if user.is_authenticated %}
                 {% if is_registered %}
                     <a href="{% url 'room_service_request' room_service.id %}">Request</a>
-                {% else %}
-                    <p>You must be registered at this hotel to request room services.</p>
                 {% endif %}
             {% endif %}
         </li>
-    {% endfor %}
+    {% endfor %} <p>You must be registered at this hotel to request room services.</p>
 </ul>
 
 {% if not user.is_authenticated %}

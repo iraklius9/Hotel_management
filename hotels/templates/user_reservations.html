@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Reservations</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="bg-primary text-white py-3">
+        <div class="container">
+            <h1 class="mb-0">Hotel Management System</h1>
+            <nav class="mt-2">
+                <a class="btn btn-light mr-2" href="{% url 'hotel_list' %}">Hotel List</a>
+                <a class="btn btn-light mr-2" href="{% url 'user_reservations' %}">My Reservations</a>
+                <a class="btn btn-light" href="{% url 'logout' %}">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container my-4">
+        <h2>Your Reservations</h2>
+
+        {% if reservations %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Reserved For</th>
+                        <th>Reservation Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                        <tr>
+                            <td>{{ reservation.service.name }}</td>
+                            <td>{{ reservation.reserved_for.start_time }} to {{ reservation.reserved_for.end_time }}</td>
+                            <td>{{ reservation.reservation_date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                You have no reservations.
+            </div>
+        {% endif %}
+    </main>
+
+    <footer class="bg-light text-center py-3">
+        <p class="mb-0">&copy; {{ current_year }} Hotel Management System. All rights reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

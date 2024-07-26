@@ -1,5 +1,6 @@
 from django.contrib import admin
-from hotels.models import Hotel, Service, Reservation, RoomService, RoomServiceRequest, CustomUser, HotelRegisteredUser
+from hotels.models import Hotel, Service, Reservation, RoomService, RoomServiceRequest, CustomUser, HotelRegisteredUser, \
+    AvailableTime
 
 admin.site.register(Hotel)
 admin.site.register(Service)
@@ -8,3 +9,4 @@ admin.site.register(RoomService)
 admin.site.register(RoomServiceRequest)
 admin.site.register(CustomUser)
 admin.site.register(HotelRegisteredUser)
+admin.site.register(AvailableTime)

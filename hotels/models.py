@@ -1,3 +1,4 @@
+# models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -46,14 +47,24 @@ class Service(models.Model):
         return self.name
 
 
+class AvailableTime(models.Model):
+    service = models.ForeignKey(Service, related_name='available_times', on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    is_reserved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.service.name} from {self.start_time} to {self.end_time}"
+
+
 class Reservation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     reservation_date = models.DateTimeField(auto_now_add=True)
-    reserved_for = models.DateTimeField()
+    reserved_for = models.ForeignKey(AvailableTime, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user} - {self.service} on {self.reserved_for}"
+        return f"{self.user} - {self.service} on {self.reserved_for.start_time}"
 
 
 class RoomService(models.Model):
