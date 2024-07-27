@@ -1,14 +1,81 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Hotels</title>
-</head>
-<body>
-    <h1>Hotels</h1>
-    <ul>
-        {% for hotel in hotels %}
-            <li><a href="{% url 'hotel_detail' hotel.id %}">{{ hotel.name }}</a></li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Home - Your Hotel Name{% endblock %}
+
+{% block content %}
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="company-name">BOOK IT</h1>
+        <p class="slogan">Your Comfort is Just a Click Away</p>
+    </div>
+
+    <div class="container mb-3">
+        <div class="row">
+            <!-- Button to toggle sidebar -->
+            <div class="col-md-12">
+                <button id="sidebarToggle" class="btn btn-primary">Toggle Filters</button>
+            </div>
+
+            <!-- Sidebar for search and filters -->
+            <div id="sidebar" class="sidebar">
+                <div class="search-bar mb-4">
+                    <form method="get" class="form-inline justify-content-center">
+                        <div class="form-group mb-2">
+                            <input type="text" name="search" class="form-control" placeholder="Search by hotel name" value="{{ search_query }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary mb-2">Search</button>
+                    </form>
+                </div>
+                <div class="filter-box">
+                    <h5>Filter by Services</h5>
+                    <form method="get">
+                        <div class="form-group">
+                            {% for service in services %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="service" value="{{ service }}" id="service{{ forloop.counter }}" {% if service in service_filter %}checked{% endif %}>
+                                    <label class="form-check-label" for="service{{ forloop.counter }}">{{ service }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main content area -->
+            <div class="col-md-9 main-content-wrapper">
+                <!-- Hotel Listings -->
+                <div class="container">
+                    <div class="row">
+                        {% for hotel in hotels %}
+                            <div class="col-md-4 hotel-image mb-4">
+                                <a href="{% url 'hotel_detail' hotel.id %}">
+                                    <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" class="img-fluid">
+                                    <div class="hotel-name">{{ hotel.name }}</div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Pagination -->
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+                        {% if hotels.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ hotels.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% for service in service_filter %}&service={{ service }}{% endfor %}">Previous</a></li>
+                        {% endif %}
+                        {% for num in hotels.paginator.page_range %}
+                            {% if hotels.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > hotels.number|add:'-3' and num < hotels.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% for service in service_filter %}&service={{ service }}{% endfor %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if hotels.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ hotels.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% for service in service_filter %}&service={{ service }}{% endfor %}">Next</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+{% endblock %}

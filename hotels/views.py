@@ -14,11 +14,34 @@ from hotels.forms import CustomUserCreationForm, CustomAuthenticationForm, RoomS
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from decimal import Decimal
+from django.core.paginator import Paginator
 
 
 def hotel_list(request):
     hotels = Hotel.objects.all()
-    return render(request, 'hotel_list.html', {'hotels': hotels})
+    services = Service.objects.values_list('name', flat=True).distinct()
+
+    search_query = request.GET.get('search', '')
+    service_filter = request.GET.getlist('service')
+
+    if search_query:
+        hotels = hotels.filter(name__icontains=search_query)
+
+    if service_filter:
+        hotels = hotels.filter(services__name__in=service_filter).distinct()
+
+    paginator = Paginator(hotels, 9)  # Show 9 hotels per page.
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'hotels': page_obj,
+        'services': services,
+        'search_query': search_query,
+        'service_filter': service_filter,
+    }
+
+    return render(request, 'hotel_list.html', context)
 
 
 def hotel_detail(request, hotel_id):

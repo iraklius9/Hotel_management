@@ -1,12 +1,11 @@
-# models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
 class Hotel(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
     location = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='hotel_images/', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -42,6 +41,7 @@ class Service(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     available = models.BooleanField(default=True)
+    image = models.ImageField(upload_to='service_images/', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -74,6 +74,7 @@ class Reservation(models.Model):
 class RoomService(models.Model):
     hotel = models.ForeignKey(Hotel, related_name='room_services', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='room_service_images/', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -88,3 +89,4 @@ class RoomServiceRequest(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.room_service} on {self.request_date}"
+

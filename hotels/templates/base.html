@@ -1,21 +1,315 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Hotel Management System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Your Hotel Name{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+            border-bottom: 3px solid black;
+        }
+
+        nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            font-size: 1em;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #ffffff;
+            border: 1px solid #e66f6f;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, color 0.3s, transform 0.3s;
+        }
+
+        .nav-link.home {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+        }
+
+        .nav-link.login {
+            background: linear-gradient(to right, #4a90e2, #5cb85c);
+        }
+
+        .nav-link.register {
+            background: linear-gradient(to right, #f39c12, #f1c40f);
+        }
+
+        .nav-link.home:hover {
+            background: linear-gradient(to right, #feb47b, #ff7e5f);
+        }
+
+        .nav-link.login:hover {
+            background: linear-gradient(to right, #5cb85c, #4a90e2);
+        }
+
+        .nav-link.register:hover {
+            background: linear-gradient(to right, #f1c40f, #f39c12);
+        }
+
+        .nav-link:active {
+            transform: translateY(1px);
+        }
+
+        .main-content {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .company-name {
+            display: inline-block;
+            padding: 20px 40px;
+            border: 2px solid #d3d3d3;
+            border-radius: 25px;
+            background-color: #f8f8f8;
+            letter-spacing: 2px;
+            font-weight: bold;
+            font-size: 2em;
+        }
+
+        .slogan {
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .hotel-image {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .hotel-image img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: all 0.3s ease;
+            border: 2px solid white;
+            border-radius: 10px;
+        }
+
+        .hotel-image:hover img {
+            filter: blur(2px);
+        }
+
+        .hotel-image .hotel-name {
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translate(-50%, 0%);
+            color: white;
+            font-size: 1.5em;
+            text-align: center;
+            width: 100%;
+            opacity: 0;
+            font-weight: normal;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid white;
+        }
+
+        .hotel-image:hover .hotel-name {
+            opacity: 1;
+            font-weight: bold;
+            animation: typing 1.5s steps(30, end) 0s 1 normal both, blink 500ms step-end infinite;
+        }
+
+        .hotel-image .hotel-name::after {
+            content: '';
+            display: block;
+            width: 50%;
+            height: 2px;
+            background: white;
+            margin: 10px auto 0;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink {
+            from, to { border-color: transparent; }
+            50% { border-color: white; }
+        }
+
+        .footer {
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+            padding: 20px;
+            text-align: center;
+            border-top: 3px solid black;
+        }
+
+        .footer p {
+            font-size: 1.1em;
+        }
+
+        .footer .contact-info b, .footer .developer-info b {
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .col-md-4 {
+            flex: 1 1 30%;
+            max-width: calc(33.333% - 20px);
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-4 {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+        }
+
+        .pagination-container {
+            text-align: center;
+        }
+
+        .pagination {
+            display: inline-flex;
+            margin: 20px auto;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 120px); /* Adjust height to accommodate header and footer */
+            padding: 40px 0; /* Add padding at the top and bottom */
+        }
+
+        .form-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .search-bar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar {
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 150px; /* Adjust based on your header height */
+            left: -250px; /* Hidden by default */
+            width: 250px;
+            z-index: 1000;
+            transition: left 0.3s ease;
+            height: 100%; /* Make the sidebar full height */
+            overflow-y: auto; /* Add scrolling if the content overflows */
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar h5 {
+            margin-bottom: 15px;
+        }
+
+        .form-check-label {
+            display: block;
+        }
+
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+        .main-content-wrapper {
+            margin-left: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content-wrapper.expanded {
+            margin-left: 280px;
+        }
+
+        #sidebarToggle {
+            position: fixed;
+            top: 100px; /* Adjust based on your header height */
+            left: 20px;
+            z-index: 1100;
+            background: linear-gradient(to right, #007bff, #0056b3); /* Add linear gradient background */
+            color: white; /* Add text color */
+            border: none; /* Remove border */
+            padding: 10px 15px; /* Add padding */
+            border-radius: 5px; /* Add border radius */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add box shadow */
+            cursor: pointer; /* Add cursor pointer */
+        }
+
+        #sidebarToggle:hover {
+            background: linear-gradient(to right, #0056b3, #007bff); /* Change background gradient on hover */
+        }
+    </style>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="{% url 'hotel_list' %}">Home</a></li>
-            {% if user.is_authenticated %}
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% else %}
-                <li><a href="{% url 'login' %}">Login</a></li>
-                <li><a href="{% url 'register' %}">Register</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% block content %}
-    {% endblock %}
+    <!-- Header -->
+    <header class="header">
+        <img src='media/logo.png' alt="Company Logo" width="100">
+        <nav>
+            <a href="/" class="nav-link home">Home</a>
+            <a href="/hotels/login" class="nav-link login">Login</a>
+            <a href="/hotels/register" class="nav-link register">Register</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        {% block content %}
+        <!-- Content from child templates will be inserted here -->
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="contact-info"><b>Contact Info:</b> i_meparishvili@cu.edu.ge | n_nozadze9@cu.edu.ge</p>
+        <p class="developer-info"><b>About Us:</b> Developed by Irakli Mepharishvili and Nikoloz Nozadze</p>
+    </footer>
+
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function () {
+            var sidebar = document.getElementById('sidebar');
+            var content = document.querySelector('.main-content-wrapper');
+            sidebar.classList.toggle('active');
+            content.classList.toggle('expanded');
+        });
+    </script>
 </body>
 </html>
