@@ -1,60 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Reservations</title>
-    <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+            border-bottom: 3px solid black;
+        }
+
+        nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            font-size: 1em;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #ffffff;
+            border: 1px solid #e66f6f;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, color 0.3s, transform 0.3s;
+        }
+
+        .nav-link.home {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+        }
+
+        .nav-link.login {
+            background: linear-gradient(to right, #4a90e2, #5cb85c);
+        }
+
+        .nav-link.register {
+            background: linear-gradient(to right, #f39c12, #f1c40f);
+        }
+
+        .nav-link.logout {
+            background: linear-gradient(to right, #e91e63, #f06292);
+        }
+
+        .nav-link.reservations {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+        }
+
+        .nav-link.home:hover {
+            background: linear-gradient(to right, #feb47b, #ff7e5f);
+        }
+
+        .nav-link.login:hover {
+            background: linear-gradient(to right, #5cb85c, #4a90e2);
+        }
+
+        .nav-link.register:hover {
+            background: linear-gradient(to right, #f1c40f, #f39c12);
+        }
+
+        .nav-link.logout:hover {
+            background: linear-gradient(to right, #f06292, #e91e63);
+        }
+
+        .nav-link.reservations:hover {
+            background: linear-gradient(to right, #feb47b, #ff7e5f);
+        }
+
+        .nav-link:active {
+            transform: translateY(1px);
+        }
+
+        .main-content {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .footer {
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+            padding: 20px;
+            text-align: center;
+            border-top: 3px solid black;
+        }
+
+        .footer p {
+            font-size: 1.1em;
+        }
+
+        .footer .contact-info b, .footer .developer-info b {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <header class="bg-primary text-white py-3">
-        <div class="container">
-            <h1 class="mb-0">Hotel Management System</h1>
-            <nav class="mt-2">
-                <a class="btn btn-light mr-2" href="{% url 'hotel_list' %}">Hotel List</a>
-                <a class="btn btn-light mr-2" href="{% url 'user_reservations' %}">My Reservations</a>
-                <a class="btn btn-light" href="{% url 'logout' %}">Logout</a>
-            </nav>
+<header class="header">
+    <div class="container">
+        <h1 class="mb-0">Hotel Management System</h1>
+        <nav class="mt-2">
+            <a href="{% url 'hotel_detail' hotel_id=1 %}" class="nav-link home">Home</a>
+{#            {% if user.is_authenticated %}#}
+{#                <a href="{% url 'logout' %}" class="nav-link logout">Logout</a>#}
+{#            {% else %}#}
+{#                <a href="{% url 'login' %}" class="nav-link login">Login</a>#}
+{#                <a href="{% url 'register' %}" class="nav-link register">Register</a>#}
+{#            {% endif %}#}
+        </nav>
+    </div>
+</header>
+
+<main class="container my-4">
+    <h2>Your Reservations</h2>
+
+    {% if reservations %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Service</th>
+                <th>Reserved For</th>
+                <th>Reservation Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.service.name }}</td>
+                    <td>{{ reservation.reserved_for.start_time }} to {{ reservation.reserved_for.end_time }}</td>
+                    <td>{{ reservation.reservation_date }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            You have no reservations.
         </div>
-    </header>
+    {% endif %}
+</main>
 
-    <main class="container my-4">
-        <h2>Your Reservations</h2>
+<footer class="footer">
+    <p class="contact-info"><b>Contact Info:</b> i_meparishvili@cu.edu.ge | n_nozadze9@cu.edu.ge</p>
+    <p class="developer-info"><b>About Us:</b> Developed by Irakli Mepharishvili and Nikoloz Nozadze</p>
+</footer>
 
-        {% if reservations %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Service</th>
-                        <th>Reserved For</th>
-                        <th>Reservation Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reservation in reservations %}
-                        <tr>
-                            <td>{{ reservation.service.name }}</td>
-                            <td>{{ reservation.reserved_for.start_time }} to {{ reservation.reserved_for.end_time }}</td>
-                            <td>{{ reservation.reservation_date }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="alert alert-info" role="alert">
-                You have no reservations.
-            </div>
-        {% endif %}
-    </main>
-
-    <footer class="bg-light text-center py-3">
-        <p class="mb-0">&copy; {{ current_year }} Hotel Management System. All rights reserved.</p>
-    </footer>
-
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -1,16 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reserve {{ service.name }}</title>
     <!-- Add Bootstrap CSS for styling -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+            border-bottom: 3px solid black;
+        }
+
+        nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            font-size: 1em;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #ffffff;
+            border: 1px solid #e66f6f;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, color 0.3s, transform 0.3s;
+        }
+
+        .nav-link.home {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+        }
+
+        .nav-link.login {
+            background: linear-gradient(to right, #4a90e2, #5cb85c);
+        }
+
+        .nav-link.register {
+            background: linear-gradient(to right, #f39c12, #f1c40f);
+        }
+
+        .nav-link.logout {
+            background: linear-gradient(to right, #e91e63, #f06292);
+        }
+
+        .nav-link.home:hover {
+            background: linear-gradient(to right, #feb47b, #ff7e5f);
+        }
+
+        .nav-link.login:hover {
+            background: linear-gradient(to right, #5cb85c, #4a90e2);
+        }
+
+        .nav-link.register:hover {
+            background: linear-gradient(to right, #f1c40f, #f39c12);
+        }
+
+        .nav-link.logout:hover {
+            background: linear-gradient(to right, #f06292, #e91e63);
+        }
+
+        .nav-link:active {
+            transform: translateY(1px);
+        }
+
+        .footer {
+            background: linear-gradient(to right, #a2c2e2, #f4f4f4);
+            padding: 20px;
+            text-align: center;
+            border-top: 3px solid black;
+        }
+
+        .footer p {
+            font-size: 1.1em;
+        }
+
+        .footer .contact-info b, .footer .developer-info b {
+            font-weight: bold;
+        }
+
+        .reserve-button {
+            font-size: 1em;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #ffffff;
+            border: 1px solid #e66f6f;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, color 0.3s, transform 0.3s;
+            background: linear-gradient(to right, #4a90e2, #5cb85c);
+        }
+
+        .reserve-button:hover {
+            background: linear-gradient(to right, #5cb85c, #4a90e2);
+        }
+
+        .reserve-button:active {
+            transform: translateY(1px);
+        }
+
+        .center-button {
+            display: flex;
+            justify-content: center;
+        }
+
+        .dropdown-short {
+            width: 50%;
+            margin: 0 auto;
+        }
+
+        .btn-group-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .btn-group-grid .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            transition: background 0.3s ease;
+        }
+
+        .btn-group-grid .btn:hover {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+        }
+
+        .btn-group-grid .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-group-grid .btn.selected {
+            background: linear-gradient(to right, #f12711, #f5af19);
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1>Reserve {{ service.name }}</h1>
+    <!-- Header -->
+    <header class="header">
+        <img src="{% static 'images/logo.jpg' %}" alt="Company Logo" width="100">
+        <nav>
+            <a href="/" class="nav-link home">Home</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="nav-link logout">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link login">Login</a>
+                <a href="{% url 'register' %}" class="nav-link register">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        <div class="text-center">
+            <h1 class="mb-0" style="text-decoration: underline; text-transform: uppercase;">{{ service.name }}</h1>
+            <p style="font-size: 1.2em;">Select an Available Time Slot</p>
+        </div>
 
         <!-- Display messages -->
         {% if messages %}
@@ -27,7 +182,7 @@
                 <label for="reservation_date">Select Date</label>
                 <input type="text" id="reservation_date" name="date" class="form-control" value="{{ selected_date|date:"Y-m-d" }}" required>
             </div>
-            <button type="submit" class="btn btn-primary">Show Available Times</button>
+            <button type="submit" class="btn btn-primary">Show Available Times</button><br>
         </form>
 
         <!-- No available times message -->
@@ -38,13 +193,13 @@
         {% endif %}
 
         <!-- Reservation form -->
-        <form method="post">
+        <br><form method="post" action="{% url 'reserve_service' service.id %}?date={{ selected_date|date:"Y-m-d" }}">
             {% csrf_token %}
-            <div class="btn-group-vertical" role="group" aria-label="Available times">
+            <div class="btn-group-grid" role="group" aria-label="Available times">
                 {% for time in available_times %}
                     <button
                         type="button"
-                        class="btn btn-primary mb-2"
+                        class="btn mb-2"
                         data-time="{{ time|date:"Y-m-d H:i:s" }}"
                     >
                         {{ time|date:"Y-m-d H:i" }}
@@ -52,10 +207,18 @@
                 {% endfor %}
             </div>
             <input type="hidden" name="reservation_times" id="hidden_reservation_times" value="">
-            <input type="hidden" name="date" value="{{ selected_date|date:"Y-m-d" }}">
-            <button type="submit" class="btn btn-success">Reserve</button>
+            <input type="hidden" name="date" id="hidden_date" value="{{ selected_date|date:"Y-m-d" }}">
+            <div class="center-button mt-3">
+                <button type="submit" class="btn btn-success">Reserve</button>
+            </div>
         </form>
-    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="contact-info"><b>Contact Info:</b> i_meparishvili@cu.edu.ge | n_nozadze9@cu.edu.ge</p>
+        <p class="developer-info"><b>About Us:</b> Developed by Irakli Mepharishvili and Nikoloz Nozadze</p>
+    </footer>
 
     <!-- Add Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -65,10 +228,11 @@
     <script>
         flatpickr("#reservation_date", {
             dateFormat: "Y-m-d",
-            minDate: "today"
+            minDate: "today",
+            defaultDate: "{{ selected_date|date:"Y-m-d" }}"
         });
 
-        document.querySelectorAll('.btn-group-vertical .btn').forEach(button => {
+        document.querySelectorAll('.btn-group-grid .btn').forEach(button => {
             button.addEventListener('click', function() {
                 const hiddenInput = document.getElementById('hidden_reservation_times');
                 const selectedTime = this.getAttribute('data-time');
@@ -76,12 +240,10 @@
 
                 if (currentTimes.includes(selectedTime)) {
                     currentTimes = currentTimes.filter(time => time !== selectedTime);
-                    this.classList.remove('btn-danger');
-                    this.classList.add('btn-primary');
+                    this.classList.remove('selected');
                 } else {
                     currentTimes.push(selectedTime);
-                    this.classList.remove('btn-primary');
-                    this.classList.add('btn-danger');
+                    this.classList.add('selected');
                 }
 
                 hiddenInput.value = currentTimes.join(',').replace(/(^,)|(,$)/g, '');  // Remove leading/trailing commas

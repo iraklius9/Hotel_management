@@ -89,4 +89,3 @@ class RoomServiceRequest(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.room_service} on {self.request_date}"
-

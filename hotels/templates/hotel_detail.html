@@ -1,57 +1,207 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ hotel.name }}</title>
-</head>
-<body>
-<h1>{{ hotel.name }}</h1>
-<p>{{ hotel.description }}</p>
+{% extends 'base.html' %}
 
-<nav>
-    {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}">Log out</a>
-    {% else %}
-        <a href="{% url 'login' %}">Log in</a> |
-        <a href="{% url 'register' %}">Register</a>
-    {% endif %}
-</nav>
+{% block title %}{{ hotel.name }}{% endblock %}
 
-<h2>Services</h2>
-<ul>
-    {% for service in hotel.services.all %}
-        <li>
-            {{ service.name }} - {{ service.description }} - ${{ service.price }}
-            {% if user.is_authenticated %}
-                {% if is_registered %}
+{% block content %}
+    {% load static %}
+    <style>
+        .center {
+            text-align: center;
+        }
 
-                    {% if service.available %}
-                        <a href="{% url 'reserve_service' service.id %}">Reserve</a>
-                    {% else %}
-                        Not available
+        .underline {
+            text-decoration: underline;
+        }
+
+        .services-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .service-card {
+            width: 350px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .service-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .service-card:hover {
+            transform: scale(1.05);
+        }
+
+        .service-card .content {
+            padding: 20px;
+            background: white;
+        }
+
+        .service-card .content h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .service-card .content p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 1em;
+            line-height: 1.6;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff5733;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .modal-body {
+            text-align: center;
+            font-size: 1.2em;
+        }
+    </style>
+
+    <h1 class="center underline">{{ hotel.name }}</h1>
+    <p>{{ hotel.description }}</p>
+
+    <br><h2 style="text-align: center">Extra Services</h2><br>
+    <div class="services-container">
+        {% for service in hotel.services.all %}
+            <div class="service-card">
+                {% if service.image %}
+                    <img src="{{ service.image.url }}" alt="{{ service.name }}">
+                {% else %}
+                    <img src="{% static 'images/pool.jpg' %}" alt="{{ service.name }}">
+                {% endif %}
+                <div class="content">
+                    <h3>{{ service.name }}</h3>
+                    <p>{{ service.description }}</p>
+                    <p>${{ service.price }}</p>
+                    {% if user.is_authenticated %}
+                        {% if is_registered %}
+                            {% if service.available %}
+                                <a href="{% url 'reserve_service' service.id %}">Reserve</a>
+                            {% else %}
+                                <p>Not available</p>
+                            {% endif %}
+                        {% else %}
+                            <p>You must be registered at this hotel to make reservations.</p>
+                        {% endif %}
                     {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <br><h2 style="text-align: center">Trackable Services</h2><br>
+    <div class="services-container">
+        <div class="service-card">
+            <img src="{% static 'images/pool.jpg' %}" alt="Pool">
+            <div class="content">
+                <h3>Pool</h3>
+                <p>Relax and enjoy our pool.</p>
+                {% if user.is_authenticated %}
+                    <button class="btn btn-primary" onclick="showTrackableServiceInfo('Pool', 42, 'middle used')">View Usage</button>
                 {% endif %}
-            {% endif %}
-        </li>
-    {% endfor %} <p>You must be registered at this hotel to make reservations.</p>
-</ul>
-
-<h2>Room Services</h2>
-<ul>
-    {% for room_service in hotel.room_services.all %}
-        <li>
-            {{ room_service.name }}
-            {% if user.is_authenticated %}
-                {% if is_registered %}
-                    <a href="{% url 'room_service_request' room_service.id %}">Request</a>
+            </div>
+        </div>
+        <div class="service-card">
+            <img src="{% static 'images/gym.jpg' %}" alt="Gym">
+            <div class="content">
+                <h3>Gym</h3>
+                <p>Stay fit and healthy in our gym.</p>
+                {% if user.is_authenticated %}
+                    <button class="btn btn-primary" onclick="showTrackableServiceInfo('Gym', 25, 'lightly used')">View Usage</button>
                 {% endif %}
-            {% endif %}
-        </li>
-    {% endfor %} <p>You must be registered at this hotel to request room services.</p>
-</ul>
+            </div>
+        </div>
+        <div class="service-card">
+            <img src="{% static 'images/canteene.jpeg' %}" alt="Canteen">
+            <div class="content">
+                <h3>Canteen</h3>
+                <p>Enjoy our delicious meals at the canteen.</p>
+                {% if user.is_authenticated %}
+                    <button class="btn btn-primary" onclick="showTrackableServiceInfo('Canteen', 65, 'heavily used')">View Usage</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
-{% if not user.is_authenticated %}
-    <p>Please <a href="{% url 'login' %}">log in</a> to use hotel services and make requests.</p>
-{% endif %}
+    <br><h2 style="text-align: center">Room Services</h2><br>
+    <div class="services-container">
+        {% for room_service in hotel.room_services.all %}
+            <div class="service-card">
+                {% if room_service.image %}
+                    <img src="{{ room_service.image.url }}" alt="{{ room_service.name }}">
+                {% else %}
+                    <img src="{% static 'images/pool.jpg' %}" alt="{{ room_service.name }}">
+                {% endif %}
+                <div class="content">
+                    <h3>{{ room_service.name }}</h3>
+                    {% if user.is_authenticated %}
+                        {% if is_registered %}
+                            <button class="btn btn-primary" onclick="showRequestSentPopup()">Request</button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div><br>
 
-</body>
-</html>
+    <!-- Modal -->
+    <div class="modal fade" id="trackableServiceModal" tabindex="-1" aria-labelledby="trackableServiceModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="trackableServiceModalLabel">Trackable Service Info</h5>
+                </div>
+                <div class="modal-body" id="trackableServiceInfo">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Service Request Modal -->
+    <div class="modal fade" id="requestSentModal" tabindex="-1" aria-labelledby="requestSentModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="requestSentModalLabel">Room Service Request</h5>
+                </div>
+                <div class="modal-body" id="requestSentInfo">
+                    Request sent successfully.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTrackableServiceInfo(serviceName, currentCustomers, usageLevel) {
+            const info = `The ${serviceName} currently has ${currentCustomers} people, so it is ${usageLevel}.`;
+            document.getElementById('trackableServiceInfo').innerText = info;
+            const modal = new bootstrap.Modal(document.getElementById('trackableServiceModal'));
+            modal.show();
+        }
+
+        function showRequestSentPopup() {
+            const modal = new bootstrap.Modal(document.getElementById('requestSentModal'));
+            modal.show();
+        }
+    </script>
+{% endblock %}

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Your Hotel Name{% endblock %}</title>
@@ -50,6 +51,10 @@
             background: linear-gradient(to right, #f39c12, #f1c40f);
         }
 
+        .nav-link.logout {
+            background: linear-gradient(to right, #e91e63, #f06292);
+        }
+
         .nav-link.home:hover {
             background: linear-gradient(to right, #feb47b, #ff7e5f);
         }
@@ -60,6 +65,14 @@
 
         .nav-link.register:hover {
             background: linear-gradient(to right, #f1c40f, #f39c12);
+        }
+
+        .nav-link.logout:hover {
+            background: linear-gradient(to right, #f06292, #e91e63);
+        }
+
+        .nav-link.reservations {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
         }
 
         .nav-link:active {
@@ -282,11 +295,16 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <img src='media/logo.png' alt="Company Logo" width="100">
+        <img src="{% static 'images/logo.jpg' %}" alt="Company Logo" width="100">
         <nav>
             <a href="/" class="nav-link home">Home</a>
-            <a href="/hotels/login" class="nav-link login">Login</a>
-            <a href="/hotels/register" class="nav-link register">Register</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'user_reservations' %}" class="nav-link reservations">Reservations</a>
+                <a href="{% url 'logout' %}" class="nav-link logout">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link login">Login</a>
+                <a href="{% url 'register' %}" class="nav-link register">Register</a>
+            {% endif %}
         </nav>
     </header>
 

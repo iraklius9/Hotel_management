@@ -120,7 +120,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'hotels.CustomUser'
 # LOGIN_REDIRECT_URL = 'hotel_detail'
-LOGOUT_REDIRECT_URL = 'hotel_list'
+LOGOUT_REDIRECT_URL = 'hotel_detail'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+
+# If you have a central static folder
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Directory where collectstatic will collect static files for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
